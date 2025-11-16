@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas de Aulas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .login-section {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .data-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .item-card {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .item-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .item-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .btn-group {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            padding: 6px 15px;
+            font-size: 12px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .flex-row > * {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .flex-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 Sistema de Reservas de Aulas</h1>
+            <p>Gestión de reservas educativas</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card login-section">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Iniciar Sesión</h2>
+            <div id="loginMessage"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" value="admin@educativo.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="loginPassword" value="admin123" required>
+                </div>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p style="margin-top: 20px; color: #666;">
+                <strong>Usuarios de prueba:</strong><br>
+                Admin: admin@educativo.com / admin123<br>
+                Profesor: profesor@educativo.com / profesor123
+            </p>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="appSection" class="hidden">
+            <div class="card">
+                <div class="user-info">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Usuario:</strong> <span id="userName"></span><br>
+                            <strong>Rol:</strong> <span id="userRole"></span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" onclick="showTab('aulas')">Aulas</div>
+                    <div class="tab" onclick="showTab('reservas')">Reservas</div>
+                    <div class="tab" onclick="showTab('tramos')">Tramos Horarios</div>
+                    <div class="tab" onclick="showTab('crear')">Nueva Reserva</div>
+                </div>
+
+                <div id="message"></div>
+
+                <!-- Aulas Tab -->
+                <div id="aulasTab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Aulas Disponibles</h2>
+                        <button onclick="loadAulas()">🔄 Actualizar</button>
+                    </div>
+                    <div id="aulasList" class="data-list"></div>
+                </div>
+
+                <!-- Reservas Tab -->
+                <div id="reservasTab" class="tab-content hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Mis Reservas</h2>
+                        <button onclick="loadReservas()">🔄 Actualizar</button>
+                    </div>
+                    <div id="reservasList" class="data-list"></div>
+                </div>
+
+                <!-- Tramos Tab -->
+                <div id="tramosTab" class="tab-content hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Tramos Horarios</h2>
+                        <button onclick="loadTramos()">🔄 Actualizar</button>
+                    </div>
+                    <div id="tramosList" class="data-list"></div>
+                </div>
+
+                <!-- Crear Reserva Tab -->
+                <div id="crearTab" class="tab-content hidden">
+                    <h2 style="margin-bottom: 20px;">Nueva Reserva</h2>
+                    <form id="reservaForm">
+                        <div class="flex-row">
+                            <div class="form-group">
+                                <label>Fecha:</label>
+                                <input type="date" id="reservaFecha" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de Asistentes:</label>
+                                <input type="number" id="reservaAsistentes" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Aula:</label>
+                            <select id="reservaAula" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tramo Horario:</label>
+                            <select id="reservaTramo" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Motivo:</label>
+                            <textarea id="reservaMotivo" rows="3" required></textarea>
+                        </div>
+                        <button type="submit">Crear Reserva</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        let token = localStorage.getItem('token');
+        let currentUser = null;
+
+        // Check if already logged in
+        if (token) {
+            checkAuth();
+        }
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    currentUser = data;
+                    showApp();
+                } else {
+                    showMessage('loginMessage', 'Credenciales incorrectas', 'error');
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Error de conexión', 'error');
+            }
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/perfil`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    currentUser = await response.json();
+                    showApp();
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                logout();
+            }
+        }
+
+        function showApp() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('userName').textContent = currentUser.nombre;
+            document.getElementById('userRole').textContent = currentUser.role;
+            loadAulas();
+            loadAulasForForm();
+            loadTramosForForm();
+            setMinDate();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('appSection').classList.add('hidden');
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tab}Tab`).classList.remove('hidden');
+
+            if (tab === 'aulas') loadAulas();
+            if (tab === 'reservas') loadReservas();
+            if (tab === 'tramos') loadTramos();
+        }
+
+        async function loadAulas() {
+            try {
+                const response = await fetch(`${API_URL}/aulas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const aulas = await response.json();
+                
+                const html = aulas.map(aula => `
+                    <div class="item-card">
+                        <h3>${aula.nombre}</h3>
+                        <p><strong>Capacidad:</strong> ${aula.capacidad} personas</p>
+                        <p><strong>Ordenadores:</strong> ${aula.esAulaDeOrdenadores ? `Sí (${aula.numeroOrdenadores})` : 'No'}</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById('aulasList').innerHTML = html || '<p>No hay aulas disponibles</p>';
+            } catch (error) {
+                showMessage('message', 'Error al cargar aulas', 'error');
+            }
+        }
+
+        async function loadReservas() {
+            try {
+                const response = await fetch(`${API_URL}/reservas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const reservas = await response.json();
+                
+                const html = reservas.map(reserva => `
+                    <div class="item-card">
+                        <h3>${reserva.motivo}</h3>
+                        <p><strong>Fecha:</strong> ${reserva.fecha}</p>
+                        <p><strong>Aula:</strong> ${reserva.aula.nombre}</p>
+                        <p><strong>Asistentes:</strong> ${reserva.numeroAsistentes}</p>
+                        <p><strong>Horario:</strong> ${reserva.tramoHorario.horaInicio} - ${reserva.tramoHorario.horaFin}</p>
+                        ${reserva.usuario.id === currentUser.id || currentUser.role === 'ROLE_ADMIN' ? `
+                            <div class="btn-group">
+                                <button class="btn-delete" onclick="deleteReserva(${reserva.id})">Eliminar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+                document.getElementById('reservasList').innerHTML = html || '<p>No hay reservas</p>';
+            } catch (error) {
+                showMessage('message', 'Error al cargar reservas', 'error');
+            }
+        }
+
+        async function loadTramos() {
+            try {
+                const response = await fetch(`${API_URL}/tramo-horario`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const tramos = await response.json();
+                
+                const html = tramos.map(tramo => `
+                    <div class="item-card">
+                        <h3>${tramo.diaSemana} - Sesión ${tramo.sesionDia}</h3>
+                        <p><strong>Horario:</strong> ${tramo.horaInicio} - ${tramo.horaFin}</p>
+                        <p><strong>Tipo:</strong> ${tramo.tipo}</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById('tramosList').innerHTML = html || '<p>No hay tramos horarios</p>';
+            } catch (error) {
+                showMessage('message', 'Error al cargar tramos', 'error');
+            }
+        }
+
+        async function loadAulasForForm() {
+            try {
+                const response = await fetch(`${API_URL}/aulas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const aulas = await response.json();
+                
+                const select = document.getElementById('reservaAula');
+                select.innerHTML = '<option value="">Seleccione un aula</option>' + 
+                    aulas.map(aula => `<option value="${aula.id}">${aula.nombre} (Cap: ${aula.capacidad})</option>`).join('');
+            } catch (error) {
+                console.error('Error loading aulas');
+            }
+        }
+
+        async function loadTramosForForm() {
+            try {
+                const response = await fetch(`${API_URL}/tramo-horario`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const tramos = await response.json();
+                
+                const select = document.getElementById('reservaTramo');
+                select.innerHTML = '<option value="">Seleccione un tramo</option>' + 
+                    tramos.map(tramo => `<option value="${tramo.id}">${tramo.diaSemana} ${tramo.horaInicio}-${tramo.horaFin}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading tramos');
+            }
+        }
+
+        function setMinDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('reservaFecha').min = tomorrow.toISOString().split('T')[0];
+        }
+
+        document.getElementById('reservaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                fecha: document.getElementById('reservaFecha').value,
+                motivo: document.getElementById('reservaMotivo').value,
+                numeroAsistentes: parseInt(document.getElementById('reservaAsistentes').value),
+                aulaId: parseInt(document.getElementById('reservaAula').value),
+                tramoHorarioId: parseInt(document.getElementById('reservaTramo').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/reservas`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showMessage('message', 'Reserva creada exitosamente', 'success');
+                    document.getElementById('reservaForm').reset();
+                    setMinDate();
+                    showTab('reservas');
+                    loadReservas();
+                } else {
+                    const error = await response.json();
+                    showMessage('message', error.mensaje || 'Error al crear reserva', 'error');
+                }
+            } catch (error) {
+                showMessage('message', 'Error de conexión', 'error');
+            }
+        });
+
+        async function deleteReserva(id) {
+            if (!confirm('¿Está seguro de eliminar esta reserva?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/reservas/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    showMessage('message', 'Reserva eliminada exitosamente', 'success');
+                    loadReservas();
+                } else {
+                    showMessage('message', 'Error al eliminar reserva', 'error');
+                }
+            } catch (error) {
+                showMessage('message', 'Error de conexión', 'error');
+            }
+        }
+
+        function showMessage(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => element.innerHTML = '', 5000);
+        }
+    </script>
+</body>
+</html>
